@@ -1,0 +1,5 @@
+#!/bin/bash
+# This was intended to be a single-threaded test,
+# but my rackup launched a 5-threaded puma by default.
+# This style of running brought it back to Earth...
+rackup -O Threads=0:1
