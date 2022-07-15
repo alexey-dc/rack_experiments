@@ -1,5 +1,5 @@
 ## Thread storage
-Ruby `Thread`  exposes custom storage via [Fiber locals](https://ruby-doc.org/core-2.5.0/Thread.html#class-Thread-label-Fiber-local+vs.+Thread-local):
+Ruby `Thread`  exposes custom storage via [Fiber and Thread locals](https://ruby-doc.org/core-2.5.0/Thread.html#class-Thread-label-Fiber-local+vs.+Thread-local):
 
 ```ruby
 Thread.current[:key1] = value
