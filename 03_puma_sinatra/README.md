@@ -1,5 +1,7 @@
 ## Sinatra
-This experiment matures the setup. Other than adding Sinatra, I've hooked up a few enhancements described below.
+This experiment adds Sinatra to our previous setup, and a few other enhancements described below.
+
+Here we just set the stage for demonstrating the issues with [Sinatra's `env`](../04_sinatra_env_basic/README.md), its interaction with [Faraday's middleware](../05_sinatra_faraday/README.md), and some [potential solutions](../06_solve_sinatra_env/README.md).
 
 ### Puma startup config
 Puma's runs `config/puma.rb` before it boots the server it's running (Sinatra/Rack...).
@@ -17,14 +19,14 @@ irb(main):002:0> RbConfig::CONFIG["RUBY_INSTALL_NAME"]
 
 Turns out I have ruby! Thank God! Mr. Mittag suggests that probably means I have one of the most popular VMs, YARV, which evolved out of MRI (which also would have given `ruby`). Groooby.
 
-Actually, this means that my integers are race-condition proof without mutexes (on my machine). I know, what a rollercoaster we've just been on, phew.
+Actually, this means that my integers are race-condition proof without mutexes (on my machine)... What a rollercoaster we've just been on, phew.
 
 ### Tests/results
-The reason I even looked up my Ruby VM is because I intentionally let the flawed, corrupted, evil, two-faced `/thread_dangerous_increment` live alongside its valiant mutex companion `/thread_safe_increment`, and pit them to fight against each other in the pit OF DEATH to THE DEATH.
+I intentionally let the flawed, corrupted, evil, two-faced `/thread_dangerous_increment` live alongside its valiant mutex companion `/thread_safe_increment` - and pit them to fight against each other in the pit OF DEATH to THE DEATH.
 
-And they came back EQUAL. Unscathed. I never have nice things, so I guess I didn't expect to get the crèm-de-la-crém Ruby Virtual Machine YARV that does provide thread-safe addition.
+They came back EQUAL. Unscathed. I never have nice things, so I didn't expect to get the crèm-de-la-crém Ruby Virtual Machine YARV that _does_ provide thread-safe addition. I would personally choose to rely on the Ruby standard, and not my particular VM, so in production it may be wise to use mutexes for this type of situation regardless.
 
-I'm not going posting the 1k+ lines of race condition results from the real experiment - but feel free to run it yourself. I would personally choose to rely on the Ruby standard, and not my particular VM, so in production it may be wise to use mutexes for this type of situation regardless.
+A smaller test result is provided below, but it holds up with thousands of requests.
 
 ```bash
 # Server

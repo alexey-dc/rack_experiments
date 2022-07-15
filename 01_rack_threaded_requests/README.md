@@ -52,7 +52,7 @@ vim /Users/alexey/.asdf/shims/rackup
 exec /opt/homebrew/opt/asdf/libexec/bin/asdf exec "rackup" "$@"
 ```
 
-Whatever. I'm sure it's fine. I'm sure Puma is righteously spinning up its extra allowed threads to deal with my multi-threaded client. Here's the result if I run the client on 1 thread with 5 requests:
+I'm sure it's fine: Puma is probably righteously spinning up its extra allowed threads to deal with my multi-threaded client. Here's the result if I run the _client_ on 1 thread with 5 requests, against this same server:
 
 ```bash
 # Server
@@ -63,9 +63,9 @@ Whatever. I'm sure it's fine. I'm sure Puma is righteously spinning up its extra
 780: 5
 ```
 
-Yup. Same thing with 1 thread + 25 requests. Maakes seense. Puma. Already. I was gonna go slow.
+Yup. Same thing with 1 thread + 25 requests. Maakes seense. So my rack just runs Puma.
 
-In fact, I'ma slow down:
+This is getting ahead of where I wanted to be in these experiments, so I want to slow down a bit:
 
 ```bash
 ?1 ~/work/alexey/rack_experiments/01_thread_globals_naive % rackup -O Threads=0:1
@@ -79,7 +79,7 @@ Puma starting in single mode...
 * Listening on http://[::1]:9292
 ````
 
-And yeah, no matter how many threads/requests the client throws at it, the `Thread.current.object_id` is table:
+And yeah, no matter how many threads/requests the client throws at it, the `Thread.current.object_id` is stable:
 ```bash
 # More massive loads have been tried.
 760: 1
@@ -108,7 +108,7 @@ Alright. And the baseline for the client shall be (for each client thread ID, ou
 800 => 3, 800 => 6, 800 => 9
 ````
 
-Makes sense... a bit too orderly. It does faithfully randomize with a few more values:
+A bit too orderly... It randomizes if we add a few more values:
 ```bash
 # Client
 +-------------------------------------------+

@@ -5,7 +5,7 @@ require 'json'
 module Rack
   class CommonLogger
     def log(env, status, header, began_at)
-      # make rack STFU; our logging middleware takes care of this      
+      # silence rack's logging that can be over-verbose for the purposes of these experiments
     end
   end
 end

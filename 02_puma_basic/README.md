@@ -1,7 +1,7 @@
 ## Introducing Puma
 Puma self-introduced itself in the [last section](../01_rack_threaded_requests/README.md) where I was trying to simply run vanilla rackup. Typical cat.
 
-To capture these letdowns, I've added a `./run` aka `bash run` command in each folder that captures what the meaningful way to run the experiment is.
+To accommodate for these letdowns and make these tests more deterministic, I've added a `./run` aka `bash run` command in each folder that captures what the meaningful way to run the experiment is.
 
 So basically, running `puma` on my system achieves the same thing as rackup
 ```bash
@@ -16,7 +16,7 @@ Puma starting in single mode...
 * Listening on http://0.0.0.0:9292
 ````
 
-But then I sort of want to lock it down to something like that default...
+But then I want to _lock it down_ to something like that default...
 ```bash
 √ ~/work/alexey/rack_experiments/02_puma_basic % puma -t0:5
 Puma starting in single mode...
@@ -65,3 +65,16 @@ Client looks good too:
 ````
 
 Moving on. I got a 9 without using mutexes. Deal with it. In fact I'd have been _happy_ if I got like a negative 75. _That_ would have been exciting.
+
+
+
+## Disappointments
+I thought after Rack left me and I got ambushed by Puma in [step (1)](../01_rack_threaded_requests/README.md), I was prepared for the harsh realities of the real world. However...
+
+```bash
+/Users/alexey/.asdf/installs/ruby/3.0.2/lib/ruby/3.0.0/net/http.rb:987:in `initialize': Can't assign requested address - connect(2) for "localhost" port 9292 (Errno::EADDRNOTAVAIL)
+````
+
+This happens if I scale up the basic client tests to about `~300x300` - both for Rack and Sinatra.
+
+It's large volume, but maybe Sinatra could have slowed down vs crashing.

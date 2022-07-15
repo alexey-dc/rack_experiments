@@ -67,24 +67,13 @@ I should really just change frameworks.
 # Experiments and results
 I'm going to go in order of increasing complexity and variety.
 
-1. [Rack is single-threaded](01_rack_threaded_request/README.md)
+1. [Rack is single-threaded](01_rack_threaded_requests/README.md)
 2. [Puma + Rack](02_puma_basic/README.md)
 3. [Puma + Sinatra](03_puma_sinatra/README.md)
 4. [Sinatra's env](04_sinatra_env_basic/README.md)
 5. [Sinatra's env with Faraday](05_sinatra_faraday/README.md)
-6. [Ruby global to pass in Sinatra's env values to Faraday](06_solve_sinatra_env/README.me)
+6. [Ruby global to pass in Sinatra's env values to Faraday](06_solve_sinatra_env/README.md)
 
-
-# Disappointments
-I thought after Rack left me and I got ambushed by Puma in step (1), I was prepared for the world.
-
-```bash
-/Users/alexey/.asdf/installs/ruby/3.0.2/lib/ruby/3.0.0/net/http.rb:987:in `initialize': Can't assign requested address - connect(2) for "localhost" port 9292 (Errno::EADDRNOTAVAIL)
-````
-
-This happens if I scale up the client tests to about `~300x300` - both for Rack and Sinatra.
-
-It's large volume, but maybe Sinatra could have slowed down vs crashing.
 
 
 # Conclusions
