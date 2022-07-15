@@ -186,3 +186,7 @@ After [1780] key: 1780-very_secret_data_149+190
 After [1740] key: 1740-very_secret_data_252+196
 After [1720] key: 1720-very_secret_data_941+292
 ```
+
+[Next experiment](../09_implicit_globals_faraday/README.md)
+
+
