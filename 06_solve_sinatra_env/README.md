@@ -175,3 +175,5 @@ The server prints how many threads it has in its thread-safe storage before and 
 [1860] thread count after: 1
 [1680] thread count after: 0
 ```
+
+[Next experiment](../07_implicit_globals_poro/README.md)
