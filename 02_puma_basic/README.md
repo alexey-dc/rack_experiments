@@ -78,4 +78,4 @@ This happens if I scale up the basic client tests to about `~300x300` - both for
 
 It's large volume, but maybe Sinatra could have slowed down vs crashing.
 
-[Next experiment](02_puma_basic/README.md)
+[Next experiment](../02_puma_basic/README.md)
