@@ -77,3 +77,5 @@ I thought after Rack left me and I got ambushed by Puma in [step (1)](../01_rack
 This happens if I scale up the basic client tests to about `~300x300` - both for Rack and Sinatra.
 
 It's large volume, but maybe Sinatra could have slowed down vs crashing.
+
+[Next experiment](02_puma_basic/README.md)
