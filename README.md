@@ -23,7 +23,7 @@ They build up from foundations (e.g. exploring Rack's underlying single-threaded
 9. [Using fiber storage to expose Sinatra's env to Faraday](09_implicit_globals_faraday/README.md)
 
 # Motivation
-This was prompted by frustrations in dealing with [Faraday](https://github.com/lostisland/faraday) middleware within - which was inspired by Rack itself - that needed to access data received in Sinatra requests.
+This was prompted by frustrations in dealing with [Faraday](https://github.com/lostisland/faraday) middleware - which was inspired by Rack itself - in a context where the middleware needed access to data from individual Sinatra requests.
 
 In this stack, sessions were parsed from HTTP headers via Rack middleware, and made available to Sinatra as part of the `env` variable that Rack relies on its middleware stack to propagate results of previously run middleware - for each request.
 
