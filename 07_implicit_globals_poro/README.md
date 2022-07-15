@@ -213,3 +213,5 @@ It does seem like data on Class-level data is shared across threads the same way
 1640 deleting value from shared key very_secret_data_534
 1600 deleting value from shared key
 ```
+
+[Next experiment](../08_implicit_globals_thread/README.md)
