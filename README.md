@@ -32,7 +32,7 @@ As part of handling that response, Faraday needed to send third-party HTTP reque
 The session was readily available inside of Sinatra controllers/endpoints that had run the middleware. But annoyingly, when Faraday ran its logging middleware - it was impossible to get ahold of Sinatra/Rack's `env` - it works like a global within the framework, but is inaccessible outside.
 
 # Staring at the abyss of options
-1. ...Perhaps I'd recreate all my Faraday connections on each new request? This may imply inefficiency in code architecture, or in CPU cycles. This also risks introducing awkward coupling of Sinatra logic with utility classes it relies on.
+1. ...Perhaps recreating all Faraday connections on each new request? This may imply inefficiency in code architecture, or in CPU cycles. This also risks introducing awkward coupling of Sinatra logic with utility classes it relies on.
 
 2. Maybe I can avoid Faraday middleware, and log each API call individually? That would be very un-DRY.
 
