@@ -123,3 +123,4 @@ A bit too orderly... It randomizes if we add a few more values:
 ```
 
 
+[Next experiment](../02_puma_basic/README.md)
