@@ -67,7 +67,6 @@ Client looks good too:
 Moving on. I got a 9 without using mutexes. Deal with it. In fact I'd have been _happy_ if I got like a negative 75. _That_ would have been exciting.
 
 
-
 ## Disappointments
 I thought after Rack left me and I got ambushed by Puma in [step (1)](../01_rack_threaded_requests/README.md), I was prepared for the harsh realities of the real world. However...
 

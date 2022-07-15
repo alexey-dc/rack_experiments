@@ -41,12 +41,9 @@ def stress_out(num_threads, requests_per_thread, url)
   threads.each { |t| t.join }
 
   all_results.each do |result|
-    puts(result.join("\n\n"))
+    puts(result.join("\n"))
   end
 end
 
 
-# Note: in this test we should keep the number of client thread less
-# than half the max number of server threads, since the server sends
-# requests to itself...
-stress_out(8, 3, "http://localhost:9292/logged_in_method")
+stress_out(5, 5, "http://localhost:9292/logged_in_method")
