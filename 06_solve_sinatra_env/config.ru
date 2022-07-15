@@ -1,5 +1,6 @@
 require_relative "../shared/init.rb"
-require_relative "./lib/some_poro_helper.rb"
+require 'faraday'
+require_relative "./lib/faraday_middleware.rb"
 
 require "sinatra/base"
 
@@ -8,22 +9,34 @@ HTTP_STATUS_OK = 200
 class Application < Sinatra::Base
   def initialize
     super
-    @poro_helper = SomePoroHelper.new
+    @http_client = Faraday.new("http://localhost:9292/empty") do |f|
+      f.use FaradayMiddleware
+    end
+  end
+
+  before do
+    puts("[#{ Thread.current.object_id }] thread count before: #{$thread_safe_kv.store_count}")
+    $thread_safe_kv.set('env', env)
+  end
+
+  after do
+    $thread_safe_kv.clear_for_thread
+    puts("[#{ Thread.current.object_id }] thread count after: #{$thread_safe_kv.store_count}")
   end
 
   get '/logged_in_method' do
-    # Where did `env` come from?
-    # This is implicit state that resembles a global:
-    # It's global to Sinatra's endpoints,
-    # but not available outside of sinatra
     secret = env['HTTP_SESSION_SECRET']
-    should_print_in_poro = env['HTTP_DEMO_ENV']
-    puts("/logged_in_method: requesting external resource")
-    @poro_helper.this_method_needs_session_info(should_print_in_poro)
+    response = @http_client.get("/")
 
     respond({
-      secret_from_headers: secret
+      http_response: response,
+      secret: secret,
+      thread_storage_count: $thread_safe_kv.store_count
     })
+  end
+
+  get '/empty' do
+    respond({hello: :world})
   end
 
 

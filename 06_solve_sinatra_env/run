@@ -1,2 +1,2 @@
 #!/bin/bash
-puma -t3:6
+puma -t5:20
