@@ -80,3 +80,6 @@ A smaller test result is provided below, but it holds up with thousands of reque
 ============ 100 ==========
 1620 => 8, 1920 => 14, 1580 => 23, 1520 => 28, 1600 => 30
 ```
+
+
+[Next experiment](../04_sinatra_env_basic/README.md)
