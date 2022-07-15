@@ -27,6 +27,11 @@ end
 
 def stress_out(num_threads, requests_per_thread, url)
   threads = []
+  n = num_threads
+  r = requests_per_thread
+  puts("+-------------------------------------------+")
+  puts("|   "+ "%02d"% n +" threads     -       "+ "%02d" % r  +" requests      |")
+  puts("+-------------------------------------------+")
   num_threads.times do
     threads.push(
       Thread.new { run_requests(requests_per_thread, url) }

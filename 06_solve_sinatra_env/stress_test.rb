@@ -5,6 +5,7 @@ require 'net/http'
 def http_get(uri)
   Net::HTTP.start(uri.host, uri.port) do |http|
     request = Net::HTTP::Get.new uri
+    request['session_secret'] = "very_secret_data"
 
     response = http.request request # Net::HTTPResponse object
   end
@@ -18,7 +19,7 @@ def run_requests(request_count, url)
   results = []
   request_count.times do
     response = JSON.parse(http_get(uri).body)
-    results.push "#{response["thread"]} => #{response["counter"]}"
+    results.push response
   end
 
   puts("============ #{tid} ==========")
@@ -30,7 +31,7 @@ def stress_out(num_threads, requests_per_thread, url)
   n = num_threads
   r = requests_per_thread
   puts("+-------------------------------------------+")
-  puts("|   "+ "%03d"% n +" threads    -      "+ "%03d" % r  +" requests      |")
+  puts("|   "+ "%02d"% n +" threads     -       "+ "%02d" % r  +" requests      |")
   puts("+-------------------------------------------+")
   num_threads.times do
     threads.push(
@@ -41,4 +42,4 @@ def stress_out(num_threads, requests_per_thread, url)
 end
 
 
-stress_out(60, 300, "http://localhost:9292")
+stress_out(1, 1, "http://localhost:9292/logged_in_method")

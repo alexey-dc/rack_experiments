@@ -26,7 +26,7 @@ The session was readily available inside of Sinatra controllers/endpoints that h
 
 5. How about. On each request. Sinatra sets. A class-level variable in Faraday... with the Rack environment... oh god, no.
 
-6. Ok, Sinatra utilizes what is basically a global, except it cleverly conceals it from Plain Ol' Ruby Object world. Can I use a global? If I can use a global, there are millions of viable-feeling solutions to consider.
+6. Ok, Sinatra utilizes what is basically a global, except it's concealed from Plain Ol' Ruby Object world. Can I use a global? If I can use a global, there are millions of viable-feeling solutions to consider.
 
 Maybe I'm just not creative enough.
 
@@ -43,7 +43,7 @@ Sorry about (4). That was not my best moment. I won't take it back. Sinatra offe
 So the thing about (5) is - it's a global. A singleton (4 too), a class-level variable, a static variable - they are all globals. I'll prove it. Right here in this repository.
 
 ## Maybe?
-Maybe I just get frustrated too easily. Maybe I have a life to live. Girls. Maybe I just haven't figured out the elegant way to do this. In that case, I'm sorry. Let's be friends - enlighten me.
+Maybe I just give up too easily. Maybe I have a life to live. Maybe I just haven't figured out the elegant way to do this. In that case, I'm sorry. Let's be friends - enlighten me.
 
 ## Yes
 Ok let's get down and dirty.
@@ -56,9 +56,9 @@ Jokes aside, our stack is run with Puma.
 
 Soo - if I declare a global in Puma - will the child threads see it and share it? What if the global is defined on a child thread - will it also be shared with the parent process, siblings, and all children?
 
-Uhh Puma also has got not just a thread pool, but cluster mode too. A whole cluster of processes. Each with its own threads. Cool. Gonna make it work with elegance and grace.
+Uhh Puma also has got not just a thread pool, but cluster mode too. A whole cluster of processes, each with its own threads. Cool. Gonna make it work with elegance and grace.
 
-Ok... rough. I'm down to try a global. Sinatra does it, but lies about it, and twists the language to manipulate your heart into believing it is a light, unopinionated framework, as it coddles its non-local environment semantics in Ruby's hyper-reflexive self-modifying shadows of metaprogramming... I'm just going to be up front about it; be a man, like my grandpa taught me - grow a beard, embrace my actual programming language without spaghettifying its call stack: declare a global - and get to the bottom of exactly how they interact with multi-threaded multi-cluster Puma running a Rack stack with Sinatric sugar.
+Ok... rough. I'm down to try a global. Sinatra does it, but lies about it, and twists the language to manipulate your heart into believing it is a light, unopinionated framework, as it coddles its non-local environment semantics in Ruby's hyper-reflexive language-altering shadow of metaprogramming... I'm just going to be up front about it; be a man, like my grandpa taught me - grow a beard, embrace my actual programming language without spaghettifying its call stack: declare a global - and get to the bottom of exactly how they interact with multi-threaded multi-cluster Puma running a Rack stack with Sinatra sugar.
 
 LET'S DO THIS.
 
@@ -68,7 +68,7 @@ I should really just change frameworks.
 I'm going to go in order of increasing complexity and variety.
 
 ## Rack is single-threaded
-The most basic rack app is single-threaded. To prove that I in fact am sane - and to establish a baseline of expectations - I ran a [simple rack application](01_rack_threaded_requests/config.ru) with `rackup`, and ran a plain Ruby multi-threaded process against it.
+The most basic rack app is single-threaded. To prove that with certainty - and to establish a baseline of expectations - I ran a [simple rack application](01_rack_threaded_requests/config.ru) with `rackup`, and ran a plain Ruby multi-threaded process against it.
 
 Each GET request to Rack increments a global variable - which I print, prefixed with its thread ID. Both the thread ID and immediate value of the global are returned from the HTTP request.
 
@@ -114,13 +114,14 @@ Fine. Weird. Why is it Puma? Is `rackup` even a real thing? I had mine from `asd
 ```
 √ ~/work/alexey/rack_experiments/01_thread_globals_naive % which rackup
 /Users/alexey/.asdf/shims/rackup
-vim /Users/alexey/.asdf/shims/rackup
 
-### Which just does this...
+### So what is that shim?
+vim /Users/alexey/.asdf/shims/rackup
+### It just does this...
 exec /opt/homebrew/opt/asdf/libexec/bin/asdf exec "rackup" "$@"
 ```
 
-Whatever. I'm sure it's fine. I'm sure Puma is righteously spinning up its extra allowed threads to deal with my multi-threaded client. Here's the result if I run 1 thread with 5 requests:
+Whatever. I'm sure it's fine. I'm sure Puma is righteously spinning up its extra allowed threads to deal with my multi-threaded client. Here's the result if I run the client on 1 thread with 5 requests:
 
 ```bash
 # Server
@@ -161,10 +162,13 @@ And yeah, no matter how many threads/requests the client throws at it, the `Thre
 760: 9
 ```
 
-Alright. And the baseline for the client shall be:
+Alright. And the baseline for the client shall be (for each client thread ID, ouputs `server_thread_id => value_returned`, ...):
 
 ```bash
 # Client
++-------------------------------------------+
+|   03 threads     -       03 requests      |
++-------------------------------------------+
 ============ 60 ==========
 800 => 1, 800 => 4, 800 => 7
 ============ 80 ==========
@@ -176,6 +180,9 @@ Alright. And the baseline for the client shall be:
 Makes sense... a bit too orderly. It does faithfully randomize with a few more values:
 ```bash
 # Client
++-------------------------------------------+
+|   03 threads     -       08 requests      |
++-------------------------------------------+
 ============ 100 ==========
 760 => 2, 760 => 5, 760 => 8, 760 => 10, 760 => 13, 760 => 16, 760 => 19, 760 => 22
 ============ 80 ==========
@@ -216,9 +223,9 @@ Puma starting in single mode...
 ...
 ````
 
-Got you kitty. Can't escape now.
+Got you kitty. Can't escape now - you get the threads you're given.
 
-The results of running the same test that was basically already accidentally run were pleasantly straightforward and as expected for once.
+The results of running the same test that was basically already accidentally run previously were straightforward and pleasantly as-expected for once.
 
 ```bash
 # Server
@@ -235,7 +242,7 @@ The results of running the same test that was basically already accidentally run
 
 Excellent. EXCELLENT! This tells me that... the *sibling threads do indeed share state*. I wish I didn't find that out by accident earlier already, because this is the paragraph where I am blown away by my discovery.
 
-I got real nice outputs - we made it to 9, so the counting was done correctly. Perhaps it's no accident? Perhaps I get thread-safe increments??
+I got real nice outputs - we made it as high as 9, so the counting was done correctly. Perhaps it's no accident? Perhaps I get thread-safe increments??
 
 [No :(](https://stackoverflow.com/a/44521011). Ugh. Ruby doesn't lock that down in any standard - so implementations may vary. I guess if I needed to count correctly, I'd have to use [mutexes](https://lucaguidi.com/2014/03/27/thread-safety-with-ruby/) or something. Oh well, I didn't really want that 9 anyway. I am *laser* focused on the target: I'll need a HashMap eventually.
 
@@ -243,6 +250,9 @@ Client looks good too:
 
 ```bash
 # Client
++-------------------------------------------+
+|   03 threads     -       03 requests      |
++-------------------------------------------+
 ============ 100 ==========
 1020 => 1, 1020 => 5, 1040 => 7
 ============ 80 ==========
@@ -250,6 +260,127 @@ Client looks good too:
 ============ 60 ==========
 1060 => 3, 1060 => 6, 1060 => 9
 ````
-Moving on. I got a 9 without using mutexes. Deal with it. Hell, I'd have been happy if I got like a negative 75. _That_ would have been exciting.
+Moving on. I got a 9 without using mutexes. Deal with it. In fact I'd have been _happy_ if I got like a negative 75. _That_ would have been exciting.
 
+
+## Sinatra
+Ok, time for business. Fo bidznes.
+
+GEM INSTALLUS EXPECTO SINATRA PATRONUM
+```bash
+bundle install
+```
+
+I'm hooking up a few big boy serious enhancements to my setup, described below.
+### Puma startup config
+Puma's runs `config/puma.rb` before it boots the server it's running (Sinatra/Rack...).
+
+That's the right place to initialize application-wide globals - my previous naive app was re-initializing the same variable each time a new thread was spun up - i.e. in theory the data could have been erased, if I actually had a thread die and be reborn.
+
+### Mutexes
+No, I mean, I care about race conditions.
+
+I don't care that my first multi-threaded app that will only ever be run 20 times in its entire existence at low scale has the theoretical capacity to miscalculate addition, but - I grew past that, and added them in this next chapter of my life.
+
+I also ["read up"](https://stackoverflow.com/a/47462446) on Ruby VM implementations:
+```ruby
+irb(main):002:0> RbConfig::CONFIG["RUBY_INSTALL_NAME"]
+=> "ruby"
+```
+
+Turns out I have ruby! Oh thank God! Mr. Mittag suggests that probably means I have one of the most popular VMs, YARV, which evolved out of MRI (which also would have given `ruby`). Groooby.
+
+Actually, this means that my integers are race-condition proof without mutexes (on my machine). I know, what a rollercoaster we've just been on, phew.
+
+### Tests/results
+Anyway, the reason I even looked up my Ruby VM is because I intentionally let the flawed, corrupted, evil, two-faced `/thread_dangerous_increment` live alongside its valiant mutex companion `/thread_safe_increment`, and pit them to fight against each other in the pit OF DEATH to THE DEATH.
+
+And they came back EQUAL. Unscathed. I never have nice things, so I guess I didn't expect that little ol' I may one day get the crèm-de-la-crém Ruby Virtual Machine YARV that is undoubtedly luring programmers of the world into a trap, as one day the rug of its dominance in popularity is pulled from underneath soft-skinned pampered developers whose ability to think critically about complex threaded code has been waning each day, drowning in assumptions that don't generalize beyond their immediate malignantly cosseted development environments with AI-driven code completion that underlines globals in red.
+
+Basically, I'm not going to post the 1k+ lines of race condition results. Trust me, both endpoints did well, and counted in exactly the right order. And that just may fail in a production deploy on some system without YARV.
+
+```bash
+# Server
+1520: 1
+1540: 2
+1580: 3
+1600: 4
+1540: 5
+1580: 6
+1520: 7
+1620: 8
+1840: 9
+1600: 10
+1620: 11
+1920: 12
+1840: 13
+1920: 14
+1580: 15
+1520: 16
+1520: 17
+1540: 18
+1580: 19
+1600: 20
+1540: 21
+1620: 22
+1580: 23
+1920: 24
+1840: 25
+1600: 26
+1520: 27
+1520: 28
+1920: 29
+1600: 30
+```
+
+```bash
+# Client
++-------------------------------------------+
+|   06 threads     -       05 requests      |
++-------------------------------------------+
+============ 160 ==========
+1540 => 2, 1580 => 6, 1620 => 11, 1520 => 16, 1580 => 19
+============ 60 ==========
+1520 => 1, 1540 => 5, 1840 => 13, 1600 => 20, 1840 => 25
+============ 140 ==========
+1520 => 7, 1600 => 10, 1520 => 17, 1540 => 21, 1600 => 26
+============ 120 ==========
+1580 => 3, 1840 => 9, 1580 => 15, 1620 => 22, 1520 => 27
+============ 80 ==========
+1600 => 4, 1920 => 12, 1540 => 18, 1920 => 24, 1920 => 29
+============ 100 ==========
+1620 => 8, 1920 => 14, 1580 => 23, 1520 => 28, 1600 => 30
+```
+
+## Next steps
+1. Extract each section into its own README.md that lives in each test's folder
+2. Link to those steps from this master README.md
+3. Show the deeper problem of env explicitly with Faraday middleware
+4. Finally, show the solution with thread_safe_kv store
+
+
+Open questions:
+- Maybe it makes sense to have a runner for the test as well?
+- Instructions in the master readme? E.g. this stuff only makes sense if you read the code and run it and inspect output
+
+### Disappointments
+I thought after Rack left me and I got ambushed by Puma in step (1), I was prepared for the world.
+
+```bash
+/Users/alexey/.asdf/installs/ruby/3.0.2/lib/ruby/3.0.0/net/http.rb:987:in `initialize': Can't assign requested address - connect(2) for "localhost" port 9292 (Errno::EADDRNOTAVAIL)
+````
+
+This happens if I scale up the client tests to about `~300x300` - both for Rack and Sinatra.
+
+It's large volume, but maybe Sinatra could have slowed down vs crashing.
+
+###
+
+
+# Conclusions
+- Ruby does not have thread-safe integers out of the box (e.g. it does have mutexes out of the box)
+  - Many Ruby VMs will have them, e.g. the common and popular YARV
+  - Seems foolish to rely on VM implementation details for engineering thread-safe code
+- Sibling threads share global state
+- Child threads share global state with parent
 

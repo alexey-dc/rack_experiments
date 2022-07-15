@@ -30,7 +30,7 @@ def stress_out(num_threads, requests_per_thread, url)
   n = num_threads
   r = requests_per_thread
   puts("+-------------------------------------------+")
-  puts("|   "+ "%03d"% n +" threads    -      "+ "%03d" % r  +" requests      |")
+  puts("|   "+ "%02d"% n +" threads     -       "+ "%02d" % r  +" requests      |")
   puts("+-------------------------------------------+")
   num_threads.times do
     threads.push(
@@ -41,4 +41,4 @@ def stress_out(num_threads, requests_per_thread, url)
 end
 
 
-stress_out(60, 300, "http://localhost:9292")
+stress_out(100, 100, "http://localhost:9292/thread_dangerous_increment")
