@@ -32,11 +32,11 @@ As part of handling that response, Faraday needed to send third-party HTTP reque
 The session was readily available inside of Sinatra controllers/endpoints that had run the middleware. But annoyingly, when Faraday ran its logging middleware - it was impossible to get ahold of Sinatra/Rack's `env` - it works like a global within the framework, but is inaccessible outside.
 
 # Staring at the abyss of options
-1. ...Perhaps I'd recreate all my Faraday connections on each new request? I hate to have my freedom so limited, though: this may imply inefficiency in code architecture, or in CPU cycles. This also risks introducing awkward coupling of Sinatra logic with utility classes it relies on.
+1. ...Perhaps I'd recreate all my Faraday connections on each new request? This may imply inefficiency in code architecture, or in CPU cycles. This also risks introducing awkward coupling of Sinatra logic with utility classes it relies on.
 
-2. Maybe I can avoid Faraday middleware, and log each API call individually? A bit too un-DRY for my taste...
+2. Maybe I can avoid Faraday middleware, and log each API call individually? That would be very un-DRY.
 
-3. Perhaps we can set a class-level variable on Faraday on each request? Would this even work?
+3. Perhaps it's possible to set a class-level variable on Faraday on each request? Would this even work?
 
 4. Ok, Sinatra utilizes what is basically a global, except it's concealed from Plain Ol' Ruby Object world. Can I just use a global?
 
@@ -48,7 +48,7 @@ However, the options I could come up with don't seem any better. Perhaps you hav
 
 E.g. I've heard an argument that globals diminish reusability, break modularity. I hope it's comically obvious that option (1) tries so hard to avoid a global - only to obliviate any hope of decoupling otherwise standalone Faraday request logic from Rack's middleware framework.
 
-(3) is also very global-like - but it's a reasonable option to explore... for that reason.
+(3) is also very global-like - but it's actually a reasonable option to explore... because it could work as well as any other globals-based solution.
 
 ## Maybe?
 Maybe I just give up too easily.  Maybe I just haven't figured out the elegant way to do this. In that case, I'm sorry. Let's be friends - enlighten me.
@@ -66,18 +66,16 @@ This project is an attempt to explore all options with using every type of Ruby 
 
 
 # Learnings
-- Ruby does not have thread-safe integers out of the box (e.g. it does have mutexes out of the box)
-  - Many Ruby VMs will have them, e.g. the common and popular YARV
-  - Seems foolish to rely on VM implementation details for engineering thread-safe code
 - Sibling threads share global state
 - Child threads share global state with parent
 - Top Level Namespace values (e.g. classes/modules) behave the same way as globals and can also be used to store data
 - Threads provide a [storage mechanism](https://ruby-doc.org/core-2.5.0/Thread.html#class-Thread-label-Fiber-local+vs.+Thread-local) that can be accessed by any file/module/class/method - but is isolated from other threads
+- Any global model (`$`, Top Level Namespace, fiber/thread-locals) can work to share state between Sinatra and Faraday middleware.
 
 # Conclusions
 There are several viable approaches to sharing data across the application.
 
-Perhaps a good default is Fiber/Thread local variables.
+Fiber/Thread local variables enable a concise solution.
 
 For more control, a global storage can be initialized when Puma starts. That type of variable can isolate threads by namespace, enable data sharing, and manual memory management - which may be a benefit or a drawback.
 
