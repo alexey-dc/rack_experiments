@@ -63,9 +63,9 @@ I'm sure it's fine: Puma is probably righteously spinning up its extra allowed t
 780: 5
 ```
 
-Yup. Same thing with 1 thread + 25 requests. Maakes seense. So my rack just runs Puma.
+Yup - just a single thread handles those requests. Same thing with 1 thread + 25 requests. Maakes seense. So my rack just runs Puma.
 
-This is getting ahead of where I wanted to be in these experiments, so I want to slow down a bit:
+This is getting ahead of where I wanted to be in these experiments, so I want to slow down a bit, and force a single-threaded backend:
 
 ```bash
 ?1 ~/work/alexey/rack_experiments/01_thread_globals_naive % rackup -O Threads=0:1
