@@ -43,7 +43,7 @@ The results of running the same test that was basically already accidentally run
 1060: 8
 ```
 
-Excellent. EXCELLENT! This tells me that... the *sibling threads do indeed share state*. I wish I didn't find that out by accident earlier already, because this is the paragraph where I am blown away by my discovery.
+Excellent. EXCELLENT! This tells me that... the *sibling threads do indeed share global state*. I wish I didn't find that out by accident earlier already, because this is the paragraph where I am blown away by my discovery.
 
 I got real nice outputs - we made it as high as 9, so the counting was done correctly. Perhaps it's no accident? Perhaps I get thread-safe increments??
 
