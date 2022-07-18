@@ -3,7 +3,7 @@ These experiments explore certain behavior of [Rack](https://github.com/rack/rac
 - Single-threadedness
 - Multi-threadedness
 - Multi-process/clustered mode
-- Global - in particular across threads
+- Various forms of lobals and their interaction across threads (Top Level Namespace, $-variables, Thread/Fiber storage)
 - Access to the data of a Rack/Sinatra request (`env`) from Plain Ol' Ruby Classes
 - Storing data in fiber-local/thread-local storage for cross-application access
 
