@@ -1,3 +1,8 @@
+## Tl;dr
+Modern `rackup` is not guaranteed to run on one thread - for example, my asdf-installed `rackup` command just runs puma with 0-5 threads.
+
+However, within a thread, there are no interruptions: it runs top to bottom, and future requests are blocked until the previous request is fully processed.
+
 ## Verifying Rack's single-threadedness
 The most basic rack app is single-threaded. To prove that with certainty - and to establish a baseline of expectations - I ran a [simple rack application](config.ru) with `rackup`, and ran a plain Ruby multi-threaded process against it.
 
