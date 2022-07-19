@@ -16,6 +16,9 @@ class Application < Sinatra::Base
     @mutex.synchronize {
       value_after_increment = ($my_professional_global += 1)
     }
+
+    sleep(rand)
+
     value_before_response = $my_professional_global
     puts("#{Thread.current.object_id}: #{value_after_increment}")
     respond({
@@ -31,6 +34,9 @@ class Application < Sinatra::Base
   get '/thread_dangerous_increment' do
     value_on_enter = $my_professional_global
     value_after_increment = ($my_professional_global += 1)
+
+    sleep(rand)
+
     value_before_response = $my_professional_global
     puts("#{Thread.current.object_id}: #{value_after_increment}")
     respond({

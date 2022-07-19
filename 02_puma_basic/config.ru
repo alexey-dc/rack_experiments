@@ -40,6 +40,7 @@ class Application
     # since in general Ruby does not guarantee
     # arithmetic thread-safety.
     $my_big_global += 1
+    sleep(rand)
 
     puts("#{Thread.current.object_id}: #{$my_big_global}")
 

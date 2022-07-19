@@ -11,7 +11,7 @@ class Application
     # so there are no race conditions here.
     # Definitely...
     $my_big_global += 1
-
+    sleep(rand)
 
     puts("#{Thread.current.object_id}: #{$my_big_global}")
 

@@ -28,6 +28,8 @@ class Application < Sinatra::Base
     secret = env['HTTP_SESSION_SECRET']
     response = @http_client.get("/")
 
+    sleep(rand)
+
     respond({
       http_response: response,
       secret: secret,
