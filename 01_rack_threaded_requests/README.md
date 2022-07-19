@@ -103,17 +103,20 @@ Alright. And the baseline for the client shall be (for each client thread ID, ou
 ```bash
 # Client
 +-------------------------------------------+
-|   03 threads     -       03 requests      |
+|   03 threads     -       08 requests      |
 +-------------------------------------------+
-============ 60 ==========
-800 => 1, 800 => 4, 800 => 7
 ============ 80 ==========
-800 => 2, 800 => 5, 800 => 8
+760 => 1, 760 => 4, 760 => 7, 760 => 10, 760 => 13, 760 => 16, 760 => 19, 760 => 22
+============ 60 ==========
+760 => 2, 760 => 5, 760 => 8, 760 => 11, 760 => 14, 760 => 17, 760 => 20, 760 => 23
 ============ 100 ==========
-800 => 3, 800 => 6, 800 => 9
+760 => 3, 760 => 6, 760 => 9, 760 => 12, 760 => 15, 760 => 18, 760 => 21, 760 => 24
 ````
 
-A bit too orderly... It randomizes if we add a few more values:
+A bit too orderly... I've seen it more random without the random sleep I have in each API call.
+
+Perhaps the thread scheduler in Ruby is more likely to run threads in the order they are created in if each thread has to be context switched (during the server-side sleep as they are blocked on I/O).
+
 ```bash
 # Client
 +-------------------------------------------+
