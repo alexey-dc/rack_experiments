@@ -70,7 +70,8 @@ This project is an attempt to explore all options with using every type of Ruby 
 - Child threads share global state with parent
 - Top Level Namespace values (e.g. classes/modules) behave the same way as globals and can also be used to store data
 - Threads provide a [storage mechanism](https://ruby-doc.org/core-2.5.0/Thread.html#class-Thread-label-Fiber-local+vs.+Thread-local) that can be accessed by any file/module/class/method - but is isolated from other threads
-- Any global model (`$`, Top Level Namespace, fiber/thread-locals) can work to share state between Sinatra and Faraday middleware.
+- Any global model (`$`, Top Level Namespace, fiber/thread-locals) can work to share state between Sinatra and Faraday middleware
+- Thread-locals and Fiber-locals will encapsulate the global data to the thread, while globals are shared across the entire multi-threaded application.
 
 # Conclusions
 There are several viable approaches to sharing data across the application.
