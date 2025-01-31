@@ -10,7 +10,7 @@ These experiments explore certain behavior of [Rack](https://github.com/rack/rac
 # Tl;dr: Experiments and results
 These are links to README.md of the individual experiments that describe the premise/observation/conclusion - but it definitely helps to read the code in each to understand the setup. Fortunately, the code is very similar between them, and usually minimal - to test 1-2 specific things.
 
-They build up from foundations (e.g. exploring Rack's underlying single-threadedness) to exploring various forms of globals in Ruby: `$` globals, Top Level Namespace, fiber-local. Sinatra's env and its interaction with PORO's is explored, and put into a multi-threded context with globals.
+They build up from foundations (e.g. exploring Rack's initial single-threaded model) to exploring various forms of globals in Ruby: `$` globals, Top Level Namespace, fiber-local. Sinatra's env and its interaction with plain ruby objects is explored, and put into a multi-threded context with globals.
 
 1. [Rack is single-threaded](01_rack_threaded_requests/README.md)
 2. [Puma + Rack](02_puma_basic/README.md)
@@ -23,47 +23,29 @@ They build up from foundations (e.g. exploring Rack's underlying single-threaded
 9. [Using fiber storage to expose Sinatra's env to Faraday](09_implicit_globals_faraday/README.md)
 
 # Motivation
-This was prompted by frustrations in dealing with [Faraday](https://github.com/lostisland/faraday) middleware - which was inspired by Rack itself - in a context where the middleware needed access to data from individual Sinatra requests.
+This was prompted by frustrations in dealing with [Faraday](https://github.com/lostisland/faraday) middleware (itself inspired by Rack) in a context where the middleware needed access to data from individual Sinatra requests.
 
-In this stack, sessions were parsed from HTTP headers via Rack middleware, and made available to Sinatra as part of the `env` variable that Rack relies on its middleware stack to propagate results of previously run middleware - for each request.
+In this stack, sessions were parsed from HTTP headers via Rack middleware, and made available to Sinatra as part of the `env` variable that Rack relies on in its middleware stack to propagate results of previously run middleware - for each request.
 
 As part of handling that response, Faraday needed to send third-party HTTP requests, and write the request, response - and, crucially, session ID - to a persistent log.
 
 The session was readily available inside of Sinatra controllers/endpoints that had run the middleware. But annoyingly, when Faraday ran its logging middleware - it was impossible to get ahold of Sinatra/Rack's `env` - it works like a global within the framework, but is inaccessible outside.
 
-# Staring at the abyss of options
-1. ...Perhaps recreating all Faraday connections on each new request? This may imply inefficiency in code architecture, or in CPU cycles. This also risks introducing awkward coupling of Sinatra logic with utility classes it relies on.
+# Basic options of integrating Sinatra data into Faraday
+1. Recreating all Faraday connections on each new request? This may imply inefficiency in code architecture, or in CPU cycles. This would also introduce awkward coupling of Sinatra logic with utility classes it relies on.
 
-2. Maybe I can avoid Faraday middleware, and log each API call individually? That would be very un-DRY.
+2. Avoid Faraday middleware, and log each API call individually? Would require significant code repetition.
 
-3. Perhaps it's possible to set a class-level variable on Faraday on each request? Would this even work?
+3. Set a class-level variable on Faraday on each request? (still requires understanding how the class level variables interplay with Puma/threading)
 
-4. Ok, Sinatra utilizes what is basically a global, except it's concealed from Plain Ol' Ruby Object world. Can I just use a global?
+4. Lean on Sinatra's semi-global, i.e. the internal `env` that's concealed from the outside world
 
-# Can I use a global?
-## No
-Programmers hate globals.
+# What to do?
+The options that don't rely on some sort of thread-aware application-wide state are not very comforting to pass Sinatra's request information to parts of the app outside of endpoints like general purpose API request senders.
 
-However, the options I could come up with don't seem any better. Perhaps you have a better idea? If so, would love to hear about it.
-
-E.g. I've heard an argument that globals diminish reusability, break modularity. I hope it's comically obvious that option (1) tries so hard to avoid a global - only to obliviate any hope of decoupling otherwise standalone Faraday request logic from Rack's middleware framework.
-
-(3) is also very global-like - but it's actually a reasonable option to explore... because it could work as well as any other globals-based solution.
-
-## Maybe?
-Maybe I just give up too easily.  Maybe I just haven't figured out the elegant way to do this. In that case, I'm sorry. Let's be friends - enlighten me.
-
-## Yes
-Globals are a problem for multi-threadedness.
-
-But... Rack isn't multi-threaded; neither is [Sinatra](https://stackoverflow.com/questions/6278817/is-sinatra-multi-threaded/6282999#6282999)! Whew.
-
-Jokes aside, our stack is run with Puma.
-
-Soo - if I declare a global in Puma - will the child threads see it and share it? What if the global is defined on a child thread - will it also be shared with the parent process, siblings, and all children?
+So - declaring a global in Puma - will the child threads see it and share it? What if the global is defined on a child thread - will it also be shared with the parent process, siblings, and all children?
 
 This project is an attempt to explore all options with using every type of Ruby global for this purpose, and to resolve all uncertainties and open questions.
-
 
 # Learnings
 - Sibling threads share global state
