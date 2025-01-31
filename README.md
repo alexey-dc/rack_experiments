@@ -10,7 +10,7 @@ These experiments explore certain behavior of [Rack](https://github.com/rack/rac
 # Tl;dr: Experiments and results
 These are links to README.md of the individual experiments that describe the premise/observation/conclusion - but it definitely helps to read the code in each to understand the setup. Fortunately, the code is very similar between them, and usually minimal - to test 1-2 specific things.
 
-They build up from foundations (e.g. exploring Rack's initial single-threaded model) to exploring various forms of globals in Ruby: `$` globals, Top Level Namespace, fiber-local. Sinatra's env and its interaction with plain ruby objects is explored, and put into a multi-threded context with globals.
+They build up from foundations (e.g. exploring Rack's initial single-threaded model) to exploring various forms of globals in Ruby and the extent to which they are available across threads: `$` globals, Top Level Namespace, fiber-local. Sinatra's env and its interaction with plain ruby objects is explored, and put into a multi-threded context with globals.
 
 1. [Rack is single-threaded](01_rack_threaded_requests/README.md)
 2. [Puma + Rack](02_puma_basic/README.md)
