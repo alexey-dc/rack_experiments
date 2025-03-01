@@ -4,7 +4,9 @@ Modern `rackup` is not guaranteed to run on one thread - for example, my asdf-in
 However, within a thread, there are no interruptions: it runs top to bottom, and future requests are blocked until the previous request is fully processed.
 
 ## Verifying Rack's single-threadedness
-The most basic rack app is single-threaded. To prove that with certainty - and to establish a baseline of expectations - I ran a [simple rack application](config.ru) with `rackup`, and ran a plain Ruby multi-threaded process against it.
+I used to think Rack was single-threded out of the box.
+
+To test that, I ran a [simple rack application](config.ru) with `rackup`, and ran a plain Ruby multi-threaded process against it.
 
 Each GET request to Rack increments a global variable - which I print, prefixed with its thread ID. Both the thread ID and immediate value of the global are returned from the HTTP request.
 
@@ -29,9 +31,8 @@ Server side output
 800: 8
 760: 9
 ```
-Oh. Wait, what. I expected those `Thread.current.object_id`s to be the same on the left...
 
-I guess `rack` isn't single-threaded out of the box after all.
+I guess `rack` isn't single-threaded out of the box after all, otherwise I'd expect those `Thread.current.object_id`s to be the same (left column).
 
 ```bash
 √ ~/work/alexey/rack_experiments/01_thread_globals_naive % rackup
@@ -46,7 +47,7 @@ Puma starting in single mode...
 Use Ctrl-C to stop
 ```
 
-Fine. Weird. Why is it Puma? Is `rackup` even a real thing? I had mine from `asdf`:
+Is my `rackup` even real? I installed it through `asdf`:
 ```
 √ ~/work/alexey/rack_experiments/01_thread_globals_naive % which rackup
 /Users/alexey/.asdf/shims/rackup
@@ -57,7 +58,7 @@ vim /Users/alexey/.asdf/shims/rackup
 exec /opt/homebrew/opt/asdf/libexec/bin/asdf exec "rackup" "$@"
 ```
 
-I'm sure it's fine: Puma is probably righteously spinning up its extra allowed threads to deal with my multi-threaded client. Here's the result if I run the _client_ on 1 thread with 5 requests, against this same server:
+Puma is probably correctly spinning up its extra allowed threads to deal with my multi-threaded client. Here's the result if I run the _client_ on 1 thread with 5 requests, against this same server:
 
 ```bash
 # Server
@@ -98,7 +99,7 @@ And yeah, no matter how many threads/requests the client throws at it, the `Thre
 760: 9
 ```
 
-Alright. And the baseline for the client shall be (for each client thread ID, ouputs `server_thread_id => value_returned`, ...):
+This establishes a baseline against which I'll compare outputs from the next series of tests (for each client thread ID, ouputs `server_thread_id => value_returned`, ...):
 
 ```bash
 # Client
