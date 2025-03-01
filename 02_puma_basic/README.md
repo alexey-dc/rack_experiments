@@ -59,14 +59,12 @@ Client output:
 1060 => 3, 1060 => 6, 1060 => 9
 ```
 
-## Disappointments
+## Testing the limit
 
 ```bash
 /Users/alexey/.asdf/installs/ruby/3.0.2/lib/ruby/3.0.0/net/http.rb:987:in `initialize': Can't assign requested address - connect(2) for "localhost" port 9292 (Errno::EADDRNOTAVAIL)
 ```
 
 This happens if I scale up the basic client tests to about `~300x300` - both for Rack and Sinatra.
-
-It's large volume, but maybe Sinatra could have slowed down vs crashing.
 
 [Next experiment](../03_puma_sinatra/README.md)
