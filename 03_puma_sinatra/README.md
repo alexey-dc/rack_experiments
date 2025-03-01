@@ -1,25 +1,12 @@
 ## Sinatra
 This experiment adds Sinatra to our previous setup, and a few other enhancements described below.
 
-Here we just set the stage for demonstrating the issues with [Sinatra's `env`](../04_sinatra_env_basic/README.md), its interaction with [Faraday's middleware](../05_sinatra_faraday/README.md), and some [potential solutions](../06_solve_sinatra_env/README.md).
+This test set's the stage for working with [Sinatra's `env`](../04_sinatra_env_basic/README.md), its interaction with [Faraday's middleware](../05_sinatra_faraday/README.md), and some [potential solutions](../06_solve_sinatra_env/README.md).
 
 ### Puma startup config
 Puma's runs `config/puma.rb` before it boots the server it's running (Sinatra/Rack...).
 
-That's the right place to initialize application-wide globals - my previous naive app was re-initializing the same variable each time a new thread was spun up - i.e. in theory the data could have been erased, if I actually had a thread die and be reborn.
-
-### Mutexes
-I didn't care that the previous app has the theoretical capacity to miscalculate addition, but here I added a more mature implementation.
-
-I also ["read up"](https://stackoverflow.com/a/47462446) on Ruby VM implementations:
-```ruby
-irb(main):002:0> RbConfig::CONFIG["RUBY_INSTALL_NAME"]
-=> "ruby"
-```
-
-Turns out I have ruby! Thank God! Mr. Mittag suggests that probably means I have one of the most popular VMs, YARV, which evolved out of MRI (which also would have given `ruby`). Groooby.
-
-Actually, this means that my integers are race-condition proof without mutexes (on my machine)... What a rollercoaster we've just been on, phew.
+That's a good place to initialize application-wide globals; my previous naive app was re-initializing the same variable each time a new thread was spun up - i.e. in theory the data could have been erased, if I actually had a thread die & re-spawn.
 
 ### Tests/results
 I intentionally let the flawed, corrupted, evil, two-faced `/thread_dangerous_increment` live alongside its valiant mutex companion `/thread_safe_increment` - and pit them to fight against each other in the pit OF DEATH to THE DEATH.
