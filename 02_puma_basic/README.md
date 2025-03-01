@@ -1,9 +1,8 @@
 ## Introducing Puma
 In the [last section](../01_rack_threaded_requests/README.md), it turned out that vanilla `rackup` already runs Puma.
 
-To accommodate for these letdowns and make these tests more deterministic, I've added a `./run` aka `bash run` command in each folder that captures what the meaningful way to run the experiment is.
+To make these tests more deterministic, I've added a `./run` aka `bash run` command in each folder that captures what the meaningful way to run the experiment is.
 
-So basically, running `puma` on my system achieves the same thing as rackup
 ```bash
 puma
 √ ~/work/alexey/rack_experiments/02_puma_basic % bash run
@@ -16,7 +15,7 @@ Puma starting in single mode...
 * Listening on http://0.0.0.0:9292
 ````
 
-But then I want to _lock it down_ to something like that default...
+Configuring the number of threads:
 ```bash
 √ ~/work/alexey/rack_experiments/02_puma_basic % puma -t0:5
 Puma starting in single mode...
@@ -26,10 +25,7 @@ Puma starting in single mode...
 ...
 ````
 
-Perfect - we can control the threads now.
-
 This will reproduce the output of the test we got when we ran `puma` accidentally/implicitly through `rackup`:
-
 ```bash
 # Server
 1020: 1
