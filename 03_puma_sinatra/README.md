@@ -9,12 +9,9 @@ Puma's runs `config/puma.rb` before it boots the server it's running (Sinatra/Ra
 That's a good place to initialize application-wide globals; my previous naive app was re-initializing the same variable each time a new thread was spun up - i.e. in theory the data could have been erased, if I actually had a thread die & re-spawn.
 
 ### Tests/results
-I intentionally let the flawed, corrupted, evil, two-faced `/thread_dangerous_increment` live alongside its valiant mutex companion `/thread_safe_increment` - and pit them to fight against each other in the pit OF DEATH to THE DEATH.
-
-They came back EQUAL. Unscathed. I never have nice things, so I didn't expect to get the crèm-de-la-crém Ruby Virtual Machine YARV that _does_ provide thread-safe addition. I would personally choose to rely on the Ruby standard, and not my particular VM, so in production it may be wise to use mutexes for this type of situation regardless.
+I tested a `/thread_dangerous_increment` that relies on my YARV thread-safety, and an explicit mutex-based `/thread_safe_increment` that should work anywhere.
 
 A smaller test result is provided below, but it holds up with thousands of requests.
-
 ```bash
 # Server
 1520: 1
