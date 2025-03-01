@@ -39,13 +39,13 @@ This will reproduce the output of the test we got when we ran `puma` accidentall
 1060: 8
 ```
 
-Excellent. EXCELLENT! This tells me that... the *sibling threads do indeed share global state*.
+EXCELLENT! That means that the *sibling threads do indeed share global state*.
 
-The output made it as high as 9, which means the counting happened correctly. Perhaps it's no accident? Perhaps I get thread-safe increments??
+Note the output made it up to 9, which is correct - in my case, I lucked out to have a Ruby interpreter that guarantees thread-safe increments.
 
-[The standard](https://stackoverflow.com/a/44521011). doesn't lock that down in Ruby - so implementations may vary. To ensure correctness, it's possible to use [mutexes](https://lucaguidi.com/2014/03/27/thread-safety-with-ruby/). 
+[The standard](https://stackoverflow.com/a/44521011). doesn't lock that down in Ruby - so implementations may vary. To ensure correctness, it's possible to use [mutexes](https://lucaguidi.com/2014/03/27/thread-safety-with-ruby/). M
 
-Client looks good in either case:
+Client output:
 ```bash
 # Client
 +-------------------------------------------+
