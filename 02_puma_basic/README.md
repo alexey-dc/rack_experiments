@@ -43,8 +43,6 @@ EXCELLENT! That means that the *sibling threads do indeed share global state*.
 
 Note the output made it up to 9, which is correct - in my case, I lucked out to have a Ruby interpreter that guarantees thread-safe increments.
 
-[The standard](https://stackoverflow.com/a/44521011). doesn't lock that down in Ruby - so implementations may vary. To ensure correctness, it's possible to use [mutexes](https://lucaguidi.com/2014/03/27/thread-safety-with-ruby/). M
-
 Client output:
 ```bash
 # Client
@@ -58,6 +56,16 @@ Client output:
 ============ 60 ==========
 1060 => 3, 1060 => 6, 1060 => 9
 ```
+
+## Mutexes
+[The standard](https://stackoverflow.com/a/44521011). doesn't lock that down in Ruby - so implementations may vary. To ensure correctness, it's possible to use [mutexes](https://lucaguidi.com/2014/03/27/thread-safety-with-ruby/). M
+
+From ["this thread"](https://stackoverflow.com/a/47462446) on Ruby VM implementations:
+```ruby
+irb(main):002:0> RbConfig::CONFIG["RUBY_INSTALL_NAME"]
+=> "ruby"
+```
+That means I have one of the most popular VMs, YARV, which evolved out of MRI (which also would have given `ruby`), so on my machine, integers are safe from race-condition without mutexes.
 
 ## Testing the limit
 
