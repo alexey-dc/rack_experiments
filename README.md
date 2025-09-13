@@ -1,14 +1,14 @@
 # Rack experiments
 These experiments explore certain behavior of [Rack](https://github.com/rack/rack), [Puma](https://puma.io/), [Sinatra](http://sinatrarb.com/):
-- Single-threadedness
-- Multi-threadedness
-- Multi-process/clustered mode
-- Various forms of lobals and their interaction across threads (Top Level Namespace, $-variables, Thread/Fiber storage)
-- Access to the data of a Rack/Sinatra request (`env`) from Plain Ol' Ruby Classes
+- Single-threadedness (does each request get processed on just 1 thread which blocks for I/O?)
+- Multi-threadedness (to what degree is what data exposed to sibling threads in each framework?)
+- Multi-process/clustered mode (when running Puma, what is shared across processes, what can be exposed?)
+- Various forms of lobals and their interaction across threads/processes (Top Level Namespace, $-variables, Thread/Fiber storage)
+- Access to the data of a Rack/Sinatra request (`env`) from Ruby classes
 - Storing data in fiber-local/thread-local storage for cross-application access
 
 # Tl;dr: Experiments and results
-These are links to README.md of the individual experiments that describe the premise/observation/conclusion - but it definitely helps to read the code in each to understand the setup. Fortunately, the code is very similar between them, and usually minimal - to test 1-2 specific things.
+Each experiment has a README.md with a premise/observation/conclusion - it helps to read the code in each to understand the setup. The code is similar/incremental across tests, usually just testing 1-2 aspects of behavior.
 
 They build up from foundations (e.g. exploring Rack's initial single-threaded model) to exploring various forms of globals in Ruby and the extent to which they are available across threads: `$` globals, Top Level Namespace, fiber-local. Sinatra's env and its interaction with plain ruby objects is explored, and put into a multi-threded context with globals.
 
@@ -23,31 +23,27 @@ They build up from foundations (e.g. exploring Rack's initial single-threaded mo
 9. [Using fiber storage to expose Sinatra's env to Faraday](09_implicit_globals_faraday/README.md)
 
 # Motivation
-This was prompted by frustrations in dealing with [Faraday](https://github.com/lostisland/faraday) middleware (itself inspired by Rack) in a context where the middleware needed access to data from individual Sinatra requests.
+I needed to learn these details when dealing with [Faraday](https://github.com/lostisland/faraday) middleware (itself inspired by Rack) in a context where the middleware needed access to data from individual Sinatra requests.
 
 In this stack, sessions were parsed from HTTP headers via Rack middleware, and made available to Sinatra as part of the `env` variable that Rack relies on in its middleware stack to propagate results of previously run middleware - for each request.
 
-As part of handling that response, Faraday needed to send third-party HTTP requests, and write the request, response - and, crucially, session ID - to a persistent log.
+As part of handling that response, Faraday needed to send third-party HTTP requests, and write the request, response - and, importantly, session ID - to a persistent log.
 
-The session was readily available inside of Sinatra controllers/endpoints that had run the middleware. But annoyingly, when Faraday ran its logging middleware - it was impossible to get ahold of Sinatra/Rack's `env` - it works like a global within the framework, but is inaccessible outside.
+The session was available inside of Sinatra controllers/endpoints that ran the middleware. But when Faraday ran its logging middleware - it was impossible to get ahold of Sinatra/Rack's `env`.
 
 # Basic options of integrating Sinatra data into Faraday
-1. Recreating all Faraday connections on each new request? This may imply inefficiency in code architecture, or in CPU cycles. This would also introduce awkward coupling of Sinatra logic with utility classes it relies on.
+1. Recreate all Faraday connections on each new requests - which can be awkward and inefficient
 
-2. Avoid Faraday middleware, and log each API call individually? Would require significant code repetition.
+2. Avoid Faraday middleware, and log each API call individually - would require significant code repetition
 
-3. Set a class-level variable on Faraday on each request? (still requires understanding how the class level variables interplay with Puma/threading)
+3. Set a class-level variable on Faraday on each request - also a bit awkward, maybe a bit too implicit (and still global)
 
-4. Lean on Sinatra's semi-global, i.e. the internal `env` that's concealed from the outside world
+4. Lean on Sinatra's `env` - ensure it is accessible to the application when processing each request
 
 # What to do?
-The options that don't rely on some sort of thread-aware application-wide state are not very comforting to pass Sinatra's request information to parts of the app outside of endpoints like general purpose API request senders.
+I favored option 4 - which required a thorough understanding of the threading model of Sinatra, Rack, and Puma - to ensure correctness in all execution environments.
 
-So - declaring a global in Puma - will the child threads see it and share it? What if the global is defined on a child thread - will it also be shared with the parent process, siblings, and all children?
-
-This project is an attempt to explore all options with using every type of Ruby global for this purpose, and to resolve all uncertainties and open questions.
-
-# Learnings
+# Results/Findings
 - Sibling threads share global state
 - Child threads share global state with parent
 - Top Level Namespace values (e.g. classes/modules) behave the same way as globals and can also be used to store data
@@ -58,7 +54,7 @@ This project is an attempt to explore all options with using every type of Ruby 
 # Conclusions
 There are several viable approaches to sharing data across the application.
 
-Fiber/Thread local variables enable a concise solution.
+I opted for the solution from experiment 9 - leveraging Fiber/Thread local variables to expose the state of each Sinatra request within the thread it is being processed on.
 
 For more control, a global storage can be initialized when Puma starts. That type of variable can isolate threads by namespace, enable data sharing, and manual memory management - which may be a benefit or a drawback.
 
