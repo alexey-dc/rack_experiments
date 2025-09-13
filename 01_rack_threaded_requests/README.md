@@ -3,6 +3,11 @@ Modern `rackup` is not guaranteed to run on one thread - for example, my asdf-in
 
 However, within a thread, there are no interruptions: it runs top to bottom, and future requests are blocked until the previous request is fully processed.
 
+## Reminder
+For the experiment log below to make sense, check out the code that is sibling to this README.md file:
+- [config.ru](config.ru)
+- [stress_test.rb](stress_test.rb) (numbers cranked down to not be quite so stressing :D)
+
 ## Verifying Rack's single-threadedness
 I used to think Rack was single-threded out of the box.
 
