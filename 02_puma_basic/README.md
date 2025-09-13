@@ -39,7 +39,7 @@ This will reproduce the output of the test we got when we ran `puma` accidentall
 1060: 8
 ```
 
-EXCELLENT! That means that the *sibling threads do indeed share global state*.
+That means that the *sibling threads do indeed share global state*.
 
 Note the output made it up to 9, which is correct - in my case, I lucked out to have a Ruby interpreter that guarantees thread-safe increments.
 
