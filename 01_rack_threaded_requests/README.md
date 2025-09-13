@@ -15,7 +15,7 @@ In the multi-threaded client, each thread just calls the GET endpoint on a loop,
 E.g. if the server-side global starts at 0, and we have 3 threads with 3 requests, we should end up at 9. Fingers crossed!
 
 ```bash
-# START!
+# start!
 rackup
 ```
 Server side output
@@ -32,8 +32,9 @@ Server side output
 760: 9
 ```
 
-I guess `rack` isn't single-threaded out of the box after all, otherwise I'd expect those `Thread.current.object_id`s to be the same (left column).
+That result is unexpected - I would expect rackup to launch a single-threaded process without Puma, and the entire left column to be just one number, using the same thread ID.
 
+So it seems `rackup` is in fact not single-threaded out of the box, otherwise I'd expect those `Thread.current.object_id`s to be the same (left column). The cuprit is seen in this output:
 ```bash
 √ ~/work/alexey/rack_experiments/01_thread_globals_naive % rackup
 Puma starting in single mode...
@@ -47,6 +48,8 @@ Puma starting in single mode...
 Use Ctrl-C to stop
 ```
 
+It seems that's the behavior of rackup out of the box - to launch itself with Puma and default process/thread settings when Puma is available.
+
 Is my `rackup` even real? I installed it through `asdf`:
 ```
 √ ~/work/alexey/rack_experiments/01_thread_globals_naive % which rackup
@@ -58,8 +61,7 @@ vim /Users/alexey/.asdf/shims/rackup
 exec /opt/homebrew/opt/asdf/libexec/bin/asdf exec "rackup" "$@"
 ```
 
-Puma is probably correctly spinning up its extra allowed threads to deal with my multi-threaded client. Here's the result if I run the _client_ on 1 thread with 5 requests, against this same server:
-
+One interesting aspect I checked - which just tests the behavior of a server behind Puma in this setup - is whether a single-threaded client utilizes a single server thread in this case:
 ```bash
 # Server
 780: 1
@@ -69,10 +71,7 @@ Puma is probably correctly spinning up its extra allowed threads to deal with my
 780: 5
 ```
 
-Yup - just a single thread handles those requests. Same thing with 1 thread + 25 requests. Maakes seense. So my rack just runs Puma.
-
-This is getting ahead of where I wanted to be in these experiments, so I want to slow down a bit, and force a single-threaded backend:
-
+This is getting ahead of where I wanted to be in this first experiment though, so I forced a single-threaded backend:
 ```bash
 ?1 ~/work/alexey/rack_experiments/01_thread_globals_naive % rackup -O Threads=0:1
 Puma starting in single mode...
@@ -85,7 +84,7 @@ Puma starting in single mode...
 * Listening on http://[::1]:9292
 ````
 
-And yeah, no matter how many threads/requests the client throws at it, the `Thread.current.object_id` is stable:
+In this case, no matter how many threads/requests the client throws at it, the `Thread.current.object_id` is stable:
 ```bash
 # More massive loads have been tried.
 760: 1
